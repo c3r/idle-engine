@@ -22,11 +22,11 @@ int main (int argc, char *argv[])
     bool stop = false;
     while (!stop) {
         sleep(1);
-
+	TICK++;
         if (queue.empty()) continue; 
 
         UpdateQuery q = queue.top();
-        while (TICK++ >= q.fire_time) {
+        while (TICK >= q.fire_time) {
             queue.pop();
             update_group(&resource_mapping[q.resource_group_id], &q);
             if (queue.empty()) break;
