@@ -9,30 +9,27 @@ struct ResourceMeta {
     uint32_t id;
 };
 
-struct Resource {
+struct ResourceGroup {
     const ResourceMeta *meta;
-    uint32_t int_val;
-};
-
-struct UpdateQuery {
-    uint32_t fire_time;
-    uint32_t entity_id;
-    uint32_t resource_id;
-    int32_t int_diff;
-};
-
-struct ResourceEntity { 
     uint32_t id;
-    std::map<int, Resource> resources; 
+    std::map<int, ResourceGroup> resources; 
+    uint32_t int_val;
+    char* str_val;
 };
 
-uint32_t GLOBAL_TICK = 0;
-const ResourceMeta kMetaGold   = { "gold",     1 };
-const ResourceMeta kMetaLumber = { "lumber",   2 };
-const ResourceMeta kMetaOil    = { "oil",      3 };
-
-struct UpdateQueryCmp {
-    bool operator() (UpdateQuery &q1, UpdateQuery &q2) {
-        return q1.fire_time > q2.fire_time;     
-    }
+struct UpdateEvent {
+    uint32_t tick;
+    uint32_t rg_id;
+    int32_t int_diff;
+    char* str_val;
 };
+
+struct UpdateEventCmp {
+    bool operator() (UpdateEvent &q1, UpdateEvent &q2) { return q1.tick > q2.tick; }
+};
+
+uint32_t TICK = 0;
+const int kDefaultTickDt = 1;
+void Tick(int dt) { sleep(dt); TICK++; }
+void Tick() { Tick(kDefaultTickDt); }
+int32_t GetTick() { return TICK; }
