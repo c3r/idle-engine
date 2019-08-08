@@ -25,8 +25,8 @@ int main (int argc, char *argv[])
 	TICK++;
         if (queue.empty()) continue; 
 
-        UpdateQuery q = queue.top();
-        while (TICK >= q.fire_time) {
+        while (TICK >= queue.top().fire_time) {
+	    UpdateQuery q = queue.top();
             queue.pop();
             update_group(&resource_mapping[q.resource_group_id], &q);
             if (queue.empty()) break;
