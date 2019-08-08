@@ -20,16 +20,16 @@ int main (int argc, char *argv[])
         queue;
 
     bool stop = false;
-    while (!stop) 
-    {
-        if (queue.empty()) { stop = true; break; }
-
-        UpdateQuery query = queue.top();
-        while (TICK++ >= query.fire_time) 
-        {
-            queue.pop();
-            update_group(&resource_mapping[query.resource_group_id], &query);
-        }
+    while (!stop) {
         sleep(1);
+
+        if (queue.empty()) continue; 
+
+        UpdateQuery q = queue.top();
+        while (TICK++ >= q.fire_time) {
+            queue.pop();
+            update_group(&resource_mapping[q.resource_group_id], &q);
+            if (queue.empty()) break;
+        }
     }
 }
