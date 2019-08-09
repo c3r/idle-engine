@@ -1,10 +1,11 @@
 #include "engine.h"
+#include "arguments.h"
 
-bool UpdateResource(RGroup* rgroup, UpdateEvent* ev) 
+bool RGroupUpdate(RGroup* rgroup, RGroupUpdateEvt* ev) 
 {
     if (rgroup == nullptr || ev == nullptr) { return false; }
 
-    Resource *res = &rgroup->map->at(ev->rg_id);
+    Resource *res = &( rgroup->map->at(ev->rgroup_id) );
     if (res == nullptr) { return false; }
 
     res->int_val += ev->int_diff;
@@ -13,33 +14,62 @@ bool UpdateResource(RGroup* rgroup, UpdateEvent* ev)
     return true;
 }
 
-RGroup* CreateResourceMapping(const char* name, uint32_t id)
+Resource ResourceCreate(RMeta *meta, RIntVal int_val)
 {
-    RMeta rmeta = { name, id };
+    Resource resource;
+    resource.meta = meta;
+    resource.int_val = int_val;
+    return resource;
+}
+
+RGroup* RGroupCreate(RMeta *rmeta)
+{
     static RGroup rg;
     static RMap_t map;
-    rg.meta = &rmeta;
+    rg.meta = rmeta;
     rg.map = &map; 
     return &rg;
 }
 
-int main (int argc, char *argv[]) 
+int ChildProcess()
 {
-    RGroup* rg = CreateResourceMapping("aaa", 1);
-    UEventPQueue_t equeue;
+    return 0;
+}
 
+int ParentProcess()
+{
+    RGroup rg;
+    UEventPQueue equeue;
     bool stop = false;
+
     while (!stop) 
     {
         Tick();
         if (equeue.empty()) continue; 
         while (GetTick() >= equeue.top().tick) 
         {
-            UpdateEvent ev = equeue.top(); 
+            RGroupUpdateEvt ev = equeue.top(); 
             equeue.pop();
-            UpdateResource(rg, &ev);
+            RGroupUpdate(&rg, &ev);
 
             if (equeue.empty()) break;
         }
     }
+
+    return 0;
+    /* Wait for child to exit. */
+    //int status;
+    //waitpid(child_pid, &status, 0);  
+}
+
+int main (int argc, char *argv[]) 
+{
+    pid_t child_pid = fork();
+    if (child_pid < 0) { perror("fork"); return 1; }
+
+    // Child
+    if (child_pid == 0) 
+        return ChildProcess();
+
+    return ParentProcess();
 }

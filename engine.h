@@ -1,3 +1,4 @@
+#pragma once
 #include <iostream>
 #include <map>
 #include <queue>
@@ -6,16 +7,22 @@
 #include <string>
 #include <sstream>
 #include <unistd.h>
+#include <wait.h>
+
+typedef std::string RName;
+typedef std::string RStrVal;
+typedef uint32_t RIdent;
+typedef uint32_t RIntVal;
 
 struct RMeta {
-    const char* name; 
-    uint32_t id;
+    RName name; 
+    RIdent id;
 };
 
 struct Resource {
     const RMeta *meta;
-    uint32_t int_val;
-    char* str_val;
+    RIntVal int_val;
+    RStrVal str_val;
 };
 
 typedef std::map<uint32_t, Resource> RMap_t; 
@@ -25,21 +32,21 @@ struct RGroup {
     RMap_t *map;
 };
 
-struct UpdateEvent {
+struct RGroupUpdateEvt {
     uint32_t tick;
-    uint32_t rg_id;
-    int32_t int_diff;
-    char* str_val;
+    RIdent rgroup_id;
+    RIntVal int_diff;
+    RStrVal str_val;
 };
 
 struct UEventCmp {
-    bool operator() (UpdateEvent &q1, UpdateEvent &q2) { 
-        return q1.tick > q2.tick; 
+    bool operator() (RGroupUpdateEvt &evt1, RGroupUpdateEvt &evt2) { 
+        return evt1.tick > evt2.tick; 
     }
 };
 
-typedef std::vector<UpdateEvent> UEventVec_t;
-typedef std::priority_queue<UpdateEvent, UEventVec_t, UEventCmp> UEventPQueue_t;
+typedef std::vector<RGroupUpdateEvt> UEventVec;
+typedef std::priority_queue<RGroupUpdateEvt, UEventVec, UEventCmp> UEventPQueue;
         
 uint32_t TICK = 0;
 const int kDefaultTickDt = 1;
