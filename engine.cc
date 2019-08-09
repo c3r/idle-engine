@@ -1,39 +1,45 @@
 #include "engine.h"
 
-bool UpdateGroup(ResourceGroup* rg, UpdateEvent* ev) 
+bool UpdateResource(RGroup* rgroup, UpdateEvent* ev) 
 {
-    if (rg == nullptr || ev == nullptr) { return false; }
+    if (rgroup == nullptr || ev == nullptr) { return false; }
 
-    ResourceGroup *r = &rg->resources[ev->rg_id];
-    if (r == nullptr) { return false; }
+    Resource *res = &rgroup->map->at(ev->rg_id);
+    if (res == nullptr) { return false; }
 
-    r->int_val += ev->int_diff;
-    r->str_val = ev->str_val;
+    res->int_val += ev->int_diff;
+    res->str_val = ev->str_val;
     
     return true;
 }
 
+RGroup* CreateResourceMapping(const char* name, uint32_t id)
+{
+    RMeta rmeta = { name, id };
+    static RGroup rg;
+    static RMap_t map;
+    rg.meta = &rmeta;
+    rg.map = &map; 
+    return &rg;
+}
+
 int main (int argc, char *argv[]) 
 {
-
-
-    std::map<uint32_t, ResourceGroup> resource_mapping;
-    std::priority_queue<UpdateEvent, std::vector<UpdateEvent>, UpdateEventCmp> 
-        queue;
+    RGroup* rg = CreateResourceMapping("aaa", 1);
+    UEventPQueue_t equeue;
 
     bool stop = false;
     while (!stop) 
     {
         Tick();
-        if (queue.empty()) continue; 
-
-        while (GetTick() >= queue.top().tick) 
+        if (equeue.empty()) continue; 
+        while (GetTick() >= equeue.top().tick) 
         {
-            UpdateEvent ev = queue.top(); 
-            queue.pop();
-            UpdateGroup(&resource_mapping[ev.rg_id], &ev);
+            UpdateEvent ev = equeue.top(); 
+            equeue.pop();
+            UpdateResource(rg, &ev);
 
-            if (queue.empty()) break;
+            if (equeue.empty()) break;
         }
     }
 }
