@@ -36,7 +36,7 @@ int ChildProcess()
     return 0;
 }
 
-int ParentProcess()
+int ParentProcess(pid_t child_pid)
 {
     RGroup rg;
     UEventPQueue equeue;
@@ -56,20 +56,28 @@ int ParentProcess()
         }
     }
 
-    return 0;
     /* Wait for child to exit. */
-    //int status;
-    //waitpid(child_pid, &status, 0);  
+    int status;
+    waitpid(child_pid, &status, 0);  
+
+    return 0;
 }
 
 int main (int argc, char *argv[]) 
 {
+    // TODO:
+    // 1. Create a socket
+    // 2. Bind the socket to an IP / port
+    // 3. Mark the socket for listening
+    // 4. Accept a call
+    // 5. Close the listening socket
+    // ...
+    // L. Close socket
+
     pid_t child_pid = fork();
     if (child_pid < 0) { perror("fork"); return 1; }
 
-    // Child
-    if (child_pid == 0) 
-        return ChildProcess();
-
-    return ParentProcess();
+    return child_pid == 0 
+        ? ChildProcess() 
+        : ParentProcess(child_pid);
 }
