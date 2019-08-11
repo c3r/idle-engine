@@ -15,7 +15,7 @@ typedef uint32_t RIdent;
 typedef uint32_t RIntVal;
 
 struct RMeta {
-    RName name; 
+    RName name;
     RIdent id;
 };
 
@@ -25,7 +25,7 @@ struct Resource {
     RStrVal str_val;
 };
 
-typedef std::map<uint32_t, Resource> RMap_t; 
+typedef std::map<uint32_t, Resource> RMap_t;
 
 struct RGroup {
     RMeta* meta;
@@ -40,16 +40,23 @@ struct RGroupUpdateEvt {
 };
 
 struct UEventCmp {
-    bool operator() (RGroupUpdateEvt &evt1, RGroupUpdateEvt &evt2) { 
-        return evt1.tick > evt2.tick; 
+    bool operator() (RGroupUpdateEvt &evt1, RGroupUpdateEvt &evt2) {
+        return evt1.tick > evt2.tick;
     }
 };
 
 typedef std::vector<RGroupUpdateEvt> UEventVec;
 typedef std::priority_queue<RGroupUpdateEvt, UEventVec, UEventCmp> UEventPQueue;
-        
+
 uint32_t TICK = 0;
 const int kDefaultTickDt = 1;
-void Tick(int dt) { sleep(dt); TICK++; }
-void Tick() { Tick(kDefaultTickDt); }
-int32_t GetTick() { return TICK; }
+void Tick(int dt) {
+    sleep(dt);
+    TICK++;
+}
+void Tick() {
+    Tick(kDefaultTickDt);
+}
+int32_t GetTick() {
+    return TICK;
+}
