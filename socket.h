@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <cerrno>
 #include <cstring>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 
@@ -31,25 +32,27 @@ class Socket {
   char svc_[NI_MAXSERV];
   char msgbuf_[MSG_BUF_SIZE];
 
-  int CreateSocket();
+  int Create();
 
   void MarkForListening();
-  void AcceptCall();
+  void Accept();
   void Bind();
-  void CloseListeningSocket();
+  void CloseListening();
 
  public:
   Socket(std::string addr, uint16_t port) : addr_(addr), port_(port) {
-    listening_sock_ = CreateSocket();
+    listening_sock_ = Create();
     Bind();
     MarkForListening();
-    AcceptCall();
+    Accept();
   }
-  ~Socket() { Close(); };
+  ~Socket() {
+    if (!client_sock_) Close();
+  };
 
   std::string GetMsg();
 
   int ReceiveMsg();
-  int SendMsg(std::string msg);
+  int SendMsg(std::string);
   int Close();
 };

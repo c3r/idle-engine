@@ -32,57 +32,51 @@ RGroup* RGroupCreate(RMeta* rmeta) {
   return &rg;
 }
 
-int ChildProcess() { return 0; }
+int start_server() {
+  try {
+    Socket s("0.0.0.0", 54000);
+    while (true) {
+      int br = s.ReceiveMsg();
+      if (br == 0) {
+        s.Close();
+        break;
+      }
+      std::cout << "CLIENT>" << s.GetMsg() << std::endl;
+      s.SendMsg("Tank you");
+    }
+    return 0;
+  } catch (std::runtime_error& e) {
+    std::cerr << "Runtime error: " << e.what() << std::endl;
+    return 1;
+  }
+}
 
-int ParentProcess(pid_t child_pid) {
+int main() {
+  pid_t child_pid = fork();
+  if (child_pid == 0) {
+    return start_server();
+  }
+
   RGroup rg;
   UEventPQueue equeue;
   bool stop = false;
 
   while (!stop) {
     Tick();
-    if (equeue.empty()) continue;
+    std::cout << GetTick() << std::endl;
+    if (equeue.empty()) {
+      continue;
+    }
     while (GetTick() >= equeue.top().tick) {
       RGroupUpdateEvt ev = equeue.top();
       equeue.pop();
       RGroupUpdate(&rg, &ev);
-
-      if (equeue.empty()) break;
+      if (equeue.empty()) {
+        break;
+      }
     }
   }
 
-  /* Wait for child to exit. */
   int status;
   waitpid(child_pid, &status, 0);
-
-  return 0;
-}
-
-int main() {
-  pid_t child_pid = fork();
-
-  if (child_pid == 0) {
-    return 0;
-  }
-
-  try {
-    Socket s("0.0.0.0", 54000);
-    while (true) {
-      int br = s.ReceiveMsg();
-      switch (br) {
-        case 0:
-          break;
-        case -1:
-          break;
-      }
-      std::cout << "> " << s.GetMsg() << std::endl;
-      s.SendMsg("Tank you");
-    }
-    s.Close();
-  } catch (std::runtime_error& e) {
-    std::cerr << "Runtime error: " << e.what() << std::endl;
-    return 1;
-  }
-
-  return child_pid == 0 ? ChildProcess() : ParentProcess(child_pid);
 }

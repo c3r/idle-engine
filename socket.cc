@@ -7,7 +7,7 @@ void throw_exception(std::string msg) {
   throw std::runtime_error(ss.str());
 }
 
-int Socket::CreateSocket() {
+int Socket::Create() {
   int res = socket(kSockDomain, kSockType, kSockProtocol);
   if (res == -1) {
     throw_exception("Could not create socket");
@@ -39,14 +39,14 @@ void Socket::MarkForListening() {
   }
 }
 
-void Socket::AcceptCall() {
+void Socket::Accept() {
   socklen_t client_size = sizeof(client_);
   client_sock_ = accept(listening_sock_, (sockaddr *)&client_, &client_size);
   if (client_sock_ == -1) {
     throw_exception("Could not accept a connection on a socket");
   }
 
-  CloseListeningSocket();
+  CloseListening();
 
   int res = getnameinfo((sockaddr *)&client_, sizeof(client_), host_,
                         NI_MAXHOST, svc_, NI_MAXSERV, 0);
@@ -59,7 +59,7 @@ void Socket::AcceptCall() {
   }
 }
 
-void Socket::CloseListeningSocket() {
+void Socket::CloseListening() {
   int res = close(listening_sock_);
   if (res == -1) {
     throw_exception("Could not close listening socket");
@@ -87,7 +87,7 @@ int Socket::ReceiveMsg() {
 std::string Socket::GetMsg() { return std::string(msgbuf_, 0, bytes_recv_); }
 
 int Socket::SendMsg(std::string msg) {
-  int res = send(client_sock_, &msg, sizeof(msg) + 1, 0);
+  int res = send(client_sock_, msg.c_str(), sizeof(msg.c_str()) + 1, 0);
   if (res == -1) {
     throw_exception("Could not send a message on a socket");
   }
