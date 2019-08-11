@@ -66,13 +66,19 @@ int main () {
 
     if (child_pid == 0) { return 0; }
 
-    Socket s("0.0.0.0", 54000);
-    while (true) {
-        int br = s.ReceiveMsg();
-        switch(br) { case 0 : break; case -1 : break; }
-        s.SendMsg("Tank you");
+	try {
+		Socket s("0.0.0.0", 54000);
+		while (true) {
+			int br = s.ReceiveMsg();
+			switch(br) { case 0 : break; case -1 : break; }
+			std::cout << "> " << s.GetMsg() << std::endl;
+			s.SendMsg("Tank you");
+		}
+		s.Close();
+	} catch (std::runtime_error& e) {
+        std::cerr << "Runtime error: " << e.what() << std::endl;
+        return 1;
     }
-    s.Close();
 
     return child_pid == 0
            ? ChildProcess()
