@@ -8,6 +8,7 @@
 #include <sstream>
 #include <unistd.h>
 #include <wait.h>
+// for socket:
 
 typedef std::string RName;
 typedef std::string RStrVal;
@@ -33,7 +34,7 @@ struct RGroup {
 };
 
 struct RGroupUpdateEvt {
-    uint32_t tick;
+    int32_t tick;
     RIdent rgroup_id;
     RIntVal int_diff;
     RStrVal str_val;

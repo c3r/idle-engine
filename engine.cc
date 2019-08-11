@@ -1,4 +1,5 @@
 #include "engine.h"
+#include "socket.h"
 
 bool RGroupUpdate(RGroup* rgroup, RGroupUpdateEvt* ev) {
     if (rgroup == nullptr || ev == nullptr) {
@@ -59,21 +60,19 @@ int ParentProcess(pid_t child_pid) {
     return 0;
 }
 
-int main (int argc, char *argv[]) {
-    // TODO:
-    // 1. Create a socket
-    // 2. Bind the socket to an IP / port
-    // 3. Mark the socket for listening
-    // 4. Accept a call
-    // 5. Close the listening socket
-    // ...
-    // L. Close socket
+int main () {
 
     pid_t child_pid = fork();
-    if (child_pid < 0) {
-        perror("fork");
-        return 1;
+
+    if (child_pid == 0) { return 0; }
+
+    Socket s("0.0.0.0", 54000);
+    while (true) {
+        int br = s.ReceiveMsg();
+        switch(br) { case 0 : break; case -1 : break; }
+        s.SendMsg("Tank you");
     }
+    s.Close();
 
     return child_pid == 0
            ? ChildProcess()
