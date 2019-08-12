@@ -8,7 +8,7 @@ void throw_exception(std::string msg) {
 }
 
 int Socket::Create() {
-  int res = socket(kSockDomain, kSockType, kSockProtocol);
+  auto res = socket(kSockDomain, kSockType, kSockProtocol);
   if (res == -1) {
     throw_exception("Could not create socket");
   }
@@ -21,7 +21,7 @@ void Socket::Bind() {
   hint.sin_family = kSockDomain;
   hint.sin_port = htons(port_);
 
-  int res = inet_pton(kSockDomain, addr_.c_str(), &hint.sin_addr);
+  auto res = inet_pton(kSockDomain, addr_.c_str(), &hint.sin_addr);
   if (res == -1) {
     throw_exception("Could not convert address string to network address");
   }
@@ -33,7 +33,7 @@ void Socket::Bind() {
 }
 
 void Socket::MarkForListening() {
-  int res = listen(listening_sock_, SOMAXCONN);
+  auto res = listen(listening_sock_, SOMAXCONN);
   if (res == -1) {
     throw_exception("Could not mark socket for listening");
   }
@@ -48,11 +48,11 @@ void Socket::Accept() {
 
   CloseListening();
 
-  int res = getnameinfo((sockaddr *)&client_, sizeof(client_), host_,
-                        NI_MAXHOST, svc_, NI_MAXSERV, 0);
+  auto res = getnameinfo((sockaddr *)&client_, sizeof(client_), host_,
+                         NI_MAXHOST, svc_, NI_MAXSERV, 0);
 
   if (res < 0) {
-    const char *res = inet_ntop(AF_INET, &client_.sin_addr, host_, NI_MAXHOST);
+    auto res = inet_ntop(AF_INET, &client_.sin_addr, host_, NI_MAXHOST);
     if (res == nullptr) {
       throw_exception("Could not convert binary address to text");
     }
@@ -60,7 +60,7 @@ void Socket::Accept() {
 }
 
 void Socket::CloseListening() {
-  int res = close(listening_sock_);
+  auto res = close(listening_sock_);
   if (res == -1) {
     throw_exception("Could not close listening socket");
   }
@@ -87,7 +87,7 @@ int Socket::ReceiveMsg() {
 std::string Socket::GetMsg() { return std::string(msgbuf_, 0, bytes_recv_); }
 
 int Socket::SendMsg(std::string msg) {
-  int res = send(client_sock_, msg.c_str(), sizeof(msg.c_str()) + 1, 0);
+  auto res = send(client_sock_, msg.c_str(), sizeof(msg.c_str()) + 1, 0);
   if (res == -1) {
     throw_exception("Could not send a message on a socket");
   }
@@ -96,7 +96,7 @@ int Socket::SendMsg(std::string msg) {
 }
 
 int Socket::Close() {
-  int res = close(client_sock_);
+  auto res = close(client_sock_);
   if (res == -1) {
     throw_exception("Could not close client socket");
   }

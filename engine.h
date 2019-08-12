@@ -30,7 +30,7 @@ typedef std::map<uint32_t, Resource> RMap_t;
 
 struct RGroup {
   RMeta* meta;
-  RMap_t* map;
+  RMap_t map;
 };
 
 struct RGroupUpdateEvt {

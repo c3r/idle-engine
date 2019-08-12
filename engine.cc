@@ -6,7 +6,7 @@ bool RGroupUpdate(RGroup* rgroup, RGroupUpdateEvt* ev) {
     return false;
   }
 
-  Resource* res = &(rgroup->map->at(ev->rgroup_id));
+  Resource* res = &(rgroup->map.at(ev->rgroup_id));
   if (res == nullptr) {
     return false;
   }
@@ -24,12 +24,12 @@ Resource ResourceCreate(RMeta* meta, RIntVal int_val) {
   return resource;
 }
 
-RGroup* RGroupCreate(RMeta* rmeta) {
-  static RGroup rg;
-  static RMap_t map;
+RGroup RGroupCreate(RMeta* rmeta) {
+  RGroup rg;
+  RMap_t map;
   rg.meta = rmeta;
-  rg.map = &map;
-  return &rg;
+  rg.map = map;
+  return rg;
 }
 
 int start_server() {
@@ -42,7 +42,7 @@ int start_server() {
         break;
       }
       std::cout << "CLIENT>" << s.GetMsg() << std::endl;
-      s.SendMsg("Tank you");
+      s.SendMsg("Tank you\n");
     }
     return 0;
   } catch (std::runtime_error& e) {
@@ -64,9 +64,11 @@ int main() {
   while (!stop) {
     Tick();
     std::cout << GetTick() << std::endl;
+
     if (equeue.empty()) {
       continue;
     }
+
     while (GetTick() >= equeue.top().tick) {
       RGroupUpdateEvt ev = equeue.top();
       equeue.pop();
