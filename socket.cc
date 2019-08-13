@@ -1,11 +1,4 @@
 #include "socket.h"
-#include <sstream>
-
-void throw_exception(std::string msg) {
-  std::stringstream ss;
-  ss << msg << ": " << std::strerror(errno);
-  throw std::runtime_error(ss.str());
-}
 
 int Socket::Create() {
   auto res = socket(kSockDomain, kSockType, kSockProtocol);
@@ -21,85 +14,58 @@ void Socket::Bind() {
   hint.sin_family = kSockDomain;
   hint.sin_port = htons(port_);
 
-  auto res = inet_pton(kSockDomain, addr_.c_str(), &hint.sin_addr);
-  if (res == -1) {
+  if (inet_pton(kSockDomain, addr_.c_str(), &hint.sin_addr) == -1) {
     throw_exception("Could not convert address string to network address");
   }
 
-  res = bind(listening_sock_, (sockaddr *)&hint, sizeof(hint));
-  if (res == -1) {
+  if (bind(listening_sock_, (sockaddr *)&hint, sizeof(hint)) == -1) {
     throw_exception("Could not bind listening socket to network address");
   }
-}
 
-void Socket::MarkForListening() {
-  auto res = listen(listening_sock_, SOMAXCONN);
-  if (res == -1) {
+  if (listen(listening_sock_, SOMAXCONN) == -1) {
     throw_exception("Could not mark socket for listening");
   }
 }
 
-void Socket::Accept() {
-  socklen_t client_size = sizeof(client_);
-  client_sock_ = accept(listening_sock_, (sockaddr *)&client_, &client_size);
-  if (client_sock_ == -1) {
+int Socket::AcceptConnection() {
+  sockaddr_in client;
+  socklen_t client_size = sizeof(client);
+  int new_conn = accept(listening_sock_, (sockaddr *)&client, &client_size);
+  if (new_conn == -1) {
     throw_exception("Could not accept a connection on a socket");
   }
-
-  CloseListening();
-
-  auto res = getnameinfo((sockaddr *)&client_, sizeof(client_), host_,
-                         NI_MAXHOST, svc_, NI_MAXSERV, 0);
-
-  if (res < 0) {
-    auto res = inet_ntop(AF_INET, &client_.sin_addr, host_, NI_MAXHOST);
-    if (res == nullptr) {
-      throw_exception("Could not convert binary address to text");
-    }
-  }
+  live_connections_[new_conn] = new_conn;
+  return new_conn;
 }
 
-void Socket::CloseListening() {
-  auto res = close(listening_sock_);
-  if (res == -1) {
-    throw_exception("Could not close listening socket");
-  }
+std::string Socket::ReceiveMsg(int conn) {
+  char msgbuf[MSG_BUF_SIZE];
+  memset(&msgbuf, 0, MSG_BUF_SIZE);
 
-  memset(host_, 0, NI_MAXHOST);
-  memset(svc_, 0, NI_MAXSERV);
-}
-
-int Socket::ReceiveMsg() {
-  memset(&msgbuf_, 0, MSG_BUF_SIZE);
-
-  bytes_recv_ = recv(client_sock_, msgbuf_, MSG_BUF_SIZE, 0);
+  bytes_recv_ = recv(conn, msgbuf, MSG_BUF_SIZE, 0);
   if (bytes_recv_ == -1) {
     throw_exception("Could not receive a message from socket");
   }
 
   if (bytes_recv_ == 0) {
-    return 0;
+    return "quit";
   }
 
-  return bytes_recv_;
+  return std::string(msgbuf, 0, bytes_recv_);
 }
 
-std::string Socket::GetMsg() { return std::string(msgbuf_, 0, bytes_recv_); }
-
-int Socket::SendMsg(std::string msg) {
-  auto res = send(client_sock_, msg.c_str(), sizeof(msg.c_str()) + 1, 0);
-  if (res == -1) {
+int Socket::SendMsg(int conn, std::string msg) {
+  if (send(conn, msg.c_str(), sizeof(msg.c_str()) + 1, 0) == -1) {
     throw_exception("Could not send a message on a socket");
   }
 
-  return res;
+  return 0;
 }
 
-int Socket::Close() {
-  auto res = close(client_sock_);
-  if (res == -1) {
+int Socket::Close(int conn) {
+  if (close(conn) == -1) {
     throw_exception("Could not close client socket");
   }
 
-  return res;
+  return 0;
 }

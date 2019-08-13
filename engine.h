@@ -8,7 +8,7 @@
 #include <queue>
 #include <sstream>
 #include <string>
-// for socket:
+#include "exception.h"
 
 typedef std::string RName;
 typedef std::string RStrVal;
