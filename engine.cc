@@ -55,7 +55,7 @@ void ConnectionProcess(std::unique_ptr<Connection> conn, int& wc, int& rc) {
 void EngineProcess(int& wc, int& rc) {
   while (true) {
     Tick();
-    std::cout << GetTick() << std::endl;
+    // std::cout << GetTick() << std::endl;
   }
   _exit(0);
 }
