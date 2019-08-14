@@ -8,6 +8,7 @@
 #include <queue>
 #include <sstream>
 #include <string>
+#include <utility>
 #include "exception.h"
 
 typedef std::string RName;
