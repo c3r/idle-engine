@@ -27,11 +27,11 @@ struct Resource {
   RStrVal str_val;
 };
 
-typedef std::map<uint32_t, Resource> RMap_t;
+typedef std::map<uint32_t, Resource> RMap;
 
 struct RGroup {
   RMeta* meta;
-  RMap_t map;
+  RMap map;
 };
 
 struct RGroupUpdateEvt {

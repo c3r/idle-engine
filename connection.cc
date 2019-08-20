@@ -16,12 +16,12 @@ std::string Connection::ReceiveMsg() const {
   }
 
   return std::string(msgbuf, 0, bytes_recv);
-};
+}
 
 void Connection::SendMsg(std::string msg) const {
   if (send(m_id, msg.c_str(), sizeof(msg.c_str()) + 1, 0) == -1) {
     throw_exception("Could not send a message on a socket");
   }
-};
+}
 
 void Connection::Close() { m_socket->Close(m_id); }

@@ -2,6 +2,20 @@
 #include "connection.h"
 #include "socket.h"
 
+std::string& ltrim(std::string& str, const std::string& chars = "\t\n\v\f\r ") {
+  str.erase(0, str.find_first_not_of(chars));
+  return str;
+}
+
+std::string& rtrim(std::string& str, const std::string& chars = "\t\n\v\f\r ") {
+  str.erase(str.find_last_not_of(chars) + 1);
+  return str;
+}
+
+std::string& trim(std::string& str, const std::string& chars = "\t\n\v\f\r ") {
+  return ltrim(rtrim(str, chars), chars);
+}
+
 bool RGroupUpdate(RGroup* rgroup, RGroupUpdateEvt* ev) {
   if (rgroup == nullptr || ev == nullptr) {
     return false;
@@ -27,7 +41,7 @@ Resource ResourceCreate(RMeta* meta, RIntVal int_val) {
 
 RGroup RGroupCreate(RMeta* rmeta) {
   RGroup rg;
-  RMap_t map;
+  RMap map;
   rg.meta = rmeta;
   rg.map = map;
   return rg;
@@ -39,11 +53,13 @@ RGroup RGroupCreate(RMeta* rmeta) {
 void ConnectionProcess(std::unique_ptr<Connection> conn, int& wc, int& rc) {
   while (true) {
     auto msg = conn->ReceiveMsg();
+    trim(msg);
+    std::cout << conn->m_id << "> " << msg << std::endl;
     if (msg == "quit") {
-      conn->Close();
+      std::cout << "Received quit command from connection " << conn->m_id
+                << ". Attempting to close connection." << std::endl;
       break;
     }
-    std::cout << conn->m_id << "> " << msg << std::endl;
   }
   conn->Close();
   _exit(0);
@@ -73,7 +89,7 @@ int CreatePipe(int* pipefds) {
 }
 
 pid_t CreateProcess() {
-  pid_t pid = fork();
+  auto pid = fork();
   if (pid == -1) {
     throw_exception("Could not create the engine process");
   }
