@@ -1,5 +1,9 @@
 #pragma once
-#include <error.h>
+#ifdef __APPLE__
+  #include <mach/error.h>
+#else
+  #include <error.h>
+#endif
 #include <cstring>
 #include <sstream>
 #include <string>

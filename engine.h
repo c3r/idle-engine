@@ -1,6 +1,10 @@
 #pragma once
+#ifdef __APPLE__
+  #include <sys/wait.h>
+#else
+  #include <wait.h>
+#endif
 #include <unistd.h>
-#include <wait.h>
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>

@@ -1,7 +1,7 @@
 all: engine
 
 engine: engine.cc
-	g++ -Wall -Wextra -g engine.cc socket.cc connection.cc -o idle
+	g++ -std=c++14 -Wall -Wextra -g engine.cc socket.cc connection.cc -o idle
 
 clear:
 	rm idle
