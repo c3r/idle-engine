@@ -15,50 +15,24 @@
 #include <utility>
 #include "exception.h"
 
-typedef std::string RName;
-typedef std::string RStrVal;
-typedef uint32_t RIdent;
-typedef uint32_t RIntVal;
+constexpr auto FD_READ = 0;
+constexpr auto FD_WRITE = 1;
 
-struct RMeta {
-  RName name;
-  RIdent id;
+class IdleEngineProcess {
+ private:
+  int _rd_channel;
+  int _wr_channel;
+
+ public:
+  IdleEngineProcess() {
+    int pipefds[2];
+    // TODO: extract pipe creation
+    auto rs = pipe(pipefds);
+    _rd_channel = pipefds[FD_READ];
+    _wr_channel = pipefds[FD_WRITE];
+  };
+  ~IdleEngineProcess(){};
+  int GetReadChannel();
+  int GetWriteChannel();
+  void Run();
 };
-
-struct Resource {
-  const RMeta* meta;
-  RIntVal int_val;
-  RStrVal str_val;
-};
-
-typedef std::map<uint32_t, Resource> RMap;
-
-struct RGroup {
-  RMeta* meta;
-  RMap map;
-};
-
-struct RGroupUpdateEvt {
-  int32_t tick;
-  RIdent rgroup_id;
-  RIntVal int_diff;
-  RStrVal str_val;
-};
-
-struct UEventCmp {
-  bool operator()(RGroupUpdateEvt& evt1, RGroupUpdateEvt& evt2) {
-    return evt1.tick > evt2.tick;
-  }
-};
-
-typedef std::vector<RGroupUpdateEvt> UEventVec;
-typedef std::priority_queue<RGroupUpdateEvt, UEventVec, UEventCmp> UEventPQueue;
-
-uint32_t TICK = 0;
-const int kDefaultTickDt = 1;
-void Tick(int dt) {
-  sleep(dt);
-  TICK++;
-}
-void Tick() { Tick(kDefaultTickDt); }
-int32_t GetTick() { return TICK; }

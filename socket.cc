@@ -24,7 +24,7 @@ void Socket::Listen() {
   }
 }
 
-std::unique_ptr<Connection> Socket::AcceptConnection() {
+Connection Socket::AcceptConnection() {
   sockaddr_in client;
   socklen_t client_size = sizeof(client);
 
@@ -32,15 +32,14 @@ std::unique_ptr<Connection> Socket::AcceptConnection() {
   if (conn_fd == -1) {
     throw_exception("Could not accept a connection on a socket");
   }
-	// TODO: add connection to a live connections map (hostname -> conn_fd)
+
   // TODO: check for max connections limit (SOMAXCONN)
-  return std::make_unique<Connection>(conn_fd, this);
+  return Connection(conn_fd, this);
 }
 
 int IsFdValid(int fd) { return fcntl(fd, F_GETFD) != -1 || errno != EBADF; }
 
 void Socket::Close(int conn_fd) {
-	// TODO: remove connection from a live connections map
   std::cout << "Closing socket for connection " << conn_fd << "..." << std::endl;
   if (!IsFdValid(conn_fd)) {
     std::cout << "Socket for connection " << conn_fd

@@ -28,20 +28,19 @@ class Socket {
  private:
   int port_;
   int listening_sock_;
-  ConnectionsVec live_connections_;
 
   int Create();
   void Listen();
 
  public:
-  Socket(uint16_t port) : port_(port) {
+  Socket(uint16_t port = kDefaultPort) : port_(port) {
     listening_sock_ = Create();
     Listen();
   }
   ~Socket(){
-      // if (!client_sock_) Close();
+      // TODO: close all connections
   };
 
-  std::unique_ptr<Connection> AcceptConnection();
+  Connection AcceptConnection();
   void Close(int fd);
 };

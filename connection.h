@@ -2,15 +2,11 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <string>
+#include "resource.h"
 
-constexpr auto kMsgBufSize = 4096;
+constexpr auto kMsgBufSize = sizeof(RGroupUpdateEvt);
 
 class Socket;
-
-struct EngineMsg {
-  int conn_id;
-  char msg[kMsgBufSize];
-};
 
 class Connection {
  private:
@@ -27,7 +23,7 @@ class Connection {
   void SetReadChannel(int rd_channel);
   Connection(int id, Socket* s) : _id(id), _socket(s) {}
   ~Connection(){};
-  std::string ReceiveMsg() const;
+  RGroupUpdateEvt ReceiveMsg() const;
   void SendMsg(std::string msg) const;
   void Close();
 };
