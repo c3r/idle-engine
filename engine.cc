@@ -2,18 +2,39 @@
 #include "connection.h"
 #include "socket.h"
 
-std::string& ltrim(std::string& str, const std::string& chars = "\t\n\v\f\r ") {
-  str.erase(0, str.find_first_not_of(chars));
-  return str;
-}
+constexpr auto FD_READ = 0;
+constexpr auto FD_WRITE = 1;
 
-std::string& rtrim(std::string& str, const std::string& chars = "\t\n\v\f\r ") {
-  str.erase(str.find_last_not_of(chars) + 1);
-  return str;
-}
+// TODO: extract this
 
-std::string& trim(std::string& str, const std::string& chars = "\t\n\v\f\r ") {
-  return ltrim(rtrim(str, chars), chars);
+class IdleEngineProcess {
+ private:
+  int _rd_channel;
+  int _wr_channel;
+
+ public:
+  IdleEngineProcess() {
+    int pipefds[2];
+		// TODO: extract pipe creation
+    auto rs = pipe(pipefds);
+    _rd_channel = pipefds[FD_READ];
+    _wr_channel = pipefds[FD_WRITE];
+  };
+  ~IdleEngineProcess(){};
+  int GetReadChannel();
+  int GetWriteChannel();
+  void Run();
+};
+
+int IdleEngineProcess::GetReadChannel() { return _rd_channel; }
+int IdleEngineProcess::GetWriteChannel() { return _wr_channel; }
+void IdleEngineProcess::Run() {
+  while (true) {
+    EngineMsg msg;
+    read(_rd_channel, &msg, sizeof(msg));
+    std::cout << msg.conn_id << " > " << msg.msg << std::endl;
+  }
+  _exit(0);
 }
 
 bool RGroupUpdate(RGroup* rgroup, RGroupUpdateEvt* ev) {
@@ -47,48 +68,7 @@ RGroup RGroupCreate(RMeta* rmeta) {
   return rg;
 }
 
-/*
- * Connection process
- */
-void ConnectionProcess(std::unique_ptr<Connection> conn, int& wc, int& rc) {
-  while (true) {
-    auto msg = conn->ReceiveMsg();
-    trim(msg);
-    std::cout << conn->m_id << "> " << msg << std::endl;
-    if (msg == "quit") {
-      std::cout << "Received quit command from connection " << conn->m_id
-                << ". Attempting to close connection." << std::endl;
-      break;
-    }
-  }
-  conn->Close();
-  _exit(0);
-}
-
-/*
- * Engine process
- */
-void EngineProcess(int& wc, int& rc) {
-  while (true) {
-    Tick();
-    // std::cout << GetTick() << std::endl;
-  }
-  _exit(0);
-}
-
-#define READ 0
-#define WRITE 1
-
-int CreatePipe(int* pipefds) {
-  auto rs = pipe(pipefds);
-  if (rs == -1) {
-    throw_exception("Cannot create a pipe");
-  }
-
-  return rs;
-}
-
-pid_t CreateProcess() {
+pid_t CreateChildProcess() {
   auto pid = fork();
   if (pid == -1) {
     throw_exception("Could not create the engine process");
@@ -98,24 +78,20 @@ pid_t CreateProcess() {
 }
 
 int main() {
-  int ctp[2], ptc[2];
-  CreatePipe(ctp);
-  CreatePipe(ptc);
+  // TODO: extract all to ListenerProcess class?
+  IdleEngineProcess iep;
+  if (CreateChildProcess() == 0) iep.Run();
 
-  if (CreateProcess() == 0) {
-    EngineProcess(ptc[WRITE], ctp[READ]);
-  }
-
-  Socket socket("0.0.0.0", 54000);
-  pid_t pid;
+  Socket socket(54000);
   while (true) {
     auto conn = socket.AcceptConnection();
-    if (!(pid = CreateProcess())) {
-      ConnectionProcess(std::move(conn), ctp[WRITE], ptc[READ]);
+    conn->SetWriteChannel(iep.GetWriteChannel());
+    if (CreateChildProcess() == 0) {
+      conn->Run();
     }
   }
 
   // TODO: wait also for engine process and others?
-  waitpid(pid, nullptr, 0);
+  // waitpid(pid, nullptr, 0);
   return 0;
 }

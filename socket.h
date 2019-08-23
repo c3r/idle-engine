@@ -15,31 +15,26 @@
 #include <vector>
 #include "exception.h"
 
-#define DEFAULT_LISTENING_PORT 54000
+constexpr auto kDefaultPort = 54000;
+constexpr auto kSockDomain = AF_INET;
+constexpr auto kSockType = SOCK_STREAM;
+constexpr auto kSockProtocol = 0;
+constexpr auto kBindAddr = INADDR_ANY;
 
 class Connection;
 typedef std::vector<std::unique_ptr<Connection>> ConnectionsVec;
 
 class Socket {
  private:
-  const int kSockDomain = AF_INET;
-  const int kSockType = SOCK_STREAM;
-  const int kSockProtocol = 0;
-
-  std::string addr_;
-
   int port_;
   int listening_sock_;
   ConnectionsVec live_connections_;
-
-  char host_[NI_MAXHOST];
-  char svc_[NI_MAXSERV];
 
   int Create();
   void Listen();
 
  public:
-  Socket(std::string addr, uint16_t port) : addr_(addr), port_(port) {
+  Socket(uint16_t port) : port_(port) {
     listening_sock_ = Create();
     Listen();
   }
@@ -48,5 +43,5 @@ class Socket {
   };
 
   std::unique_ptr<Connection> AcceptConnection();
-  void Close(int conn);
+  void Close(int fd);
 };

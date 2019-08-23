@@ -13,10 +13,7 @@ void Socket::Listen() {
   sockaddr_in hint;
   hint.sin_family = kSockDomain;
   hint.sin_port = htons(port_);
-
-  if (inet_pton(kSockDomain, addr_.c_str(), &hint.sin_addr) == -1) {
-    throw_exception("Could not convert address string to network address");
-  }
+  hint.sin_addr.s_addr = kBindAddr;
 
   if (bind(listening_sock_, (sockaddr *)&hint, sizeof(hint)) == -1) {
     throw_exception("Could not bind listening socket to network address");
@@ -35,24 +32,25 @@ std::unique_ptr<Connection> Socket::AcceptConnection() {
   if (conn_fd == -1) {
     throw_exception("Could not accept a connection on a socket");
   }
-
+	// TODO: add connection to a live connections map (hostname -> conn_fd)
   // TODO: check for max connections limit (SOMAXCONN)
   return std::make_unique<Connection>(conn_fd, this);
 }
 
 int IsFdValid(int fd) { return fcntl(fd, F_GETFD) != -1 || errno != EBADF; }
 
-void Socket::Close(int conn) {
-  std::cout << "Closing socket for connection " << conn << "..." << std::endl;
-  if (!IsFdValid(conn)) {
-    std::cout << "Socket for connection " << conn
+void Socket::Close(int conn_fd) {
+	// TODO: remove connection from a live connections map
+  std::cout << "Closing socket for connection " << conn_fd << "..." << std::endl;
+  if (!IsFdValid(conn_fd)) {
+    std::cout << "Socket for connection " << conn_fd
               << " alredy closed. Nothing to do." << std::endl;
     return;
   }
 
-  if (shutdown(conn, SHUT_RDWR) == -1 || close(conn) == -1) {
-    throw_exception("Could not close client socket");
+  if (shutdown(conn_fd, SHUT_RDWR) == -1 || close(conn_fd) == -1) {
+    throw_exception("Could not close client socket for connection.");
   }
 
-  std::cout << "Socket for connection " << conn << " closed." << std::endl;
+  std::cout << "Socket for connection " << conn_fd << " closed." << std::endl;
 }

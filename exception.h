@@ -7,6 +7,8 @@
 #include <cstring>
 #include <sstream>
 #include <string>
+#include <chrono>
+#include <ctime>
 
 inline void throw_exception(std::string msg) {
   std::stringstream ss;

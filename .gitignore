@@ -45,3 +45,10 @@ engine
 idle
 *.o
 .vscode
+.vs
+bin
+idle-engine.sln
+idle-engine.vcxproj
+idle-engine.vcxproj.user
+obj
+
