@@ -1,8 +1,8 @@
 #pragma once
-#include <string>
 #include <map>
-#include <vector>
 #include <queue>
+#include <string>
+#include <vector>
 
 typedef std::string RName;
 typedef std::string RStrVal;
@@ -28,6 +28,7 @@ struct RGroup {
 };
 
 struct RGroupUpdateEvt {
+  int conn_id;
   int32_t tick;
   RIdent rgroup_id;
   RIntVal int_diff;

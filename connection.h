@@ -1,27 +1,26 @@
 #pragma once
+#include "resource.h"
+#include <string>
 #include <sys/socket.h>
 #include <sys/types.h>
-#include <string>
-#include "resource.h"
-
-constexpr auto kMsgBufSize = sizeof(RGroupUpdateEvt);
 
 class Socket;
 
-class Connection {
- private:
+class Connection
+{
+private:
+  int _id = 0;
   Socket* _socket;
   int _rd_channel;
   int _wr_channel;
 
- public:
-  int _id = 0;
+public:
   void Run();
   int GetWriteChannel();
   int GetReadChannel();
   void SetWriteChannel(int wr_channel);
   void SetReadChannel(int rd_channel);
-  Connection(int id, Socket* s) : _id(id), _socket(s) {}
+  Connection(int id) : _id(id) {}
   ~Connection(){};
   RGroupUpdateEvt ReceiveMsg() const;
   void SendMsg(std::string msg) const;

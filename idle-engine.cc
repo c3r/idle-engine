@@ -1,40 +1,40 @@
-#include "engine.h"
 #include "connection.h"
+#include "engine.h"
+#include "pipe.h"
 #include "socket.h"
 
-pid_t CreateChildProcess() {
+inline pid_t CreateChildProcess() {
   auto pid = fork();
   if (pid == -1) {
-    throw_exception("Could not create the engine process");
+    throw_exception("Could not create child process");
   }
 
   return pid;
 }
 
-IdleEngineProcess* EngineProcess() {
-  IdleEngineProcess iep;
+int main() {
+  Pipe p;
+
+  // Engine process
+  IdleEngineProcess iep(p.GetReadChannel());
   if (CreateChildProcess() == 0) {
     iep.Run();
   }
-  return &iep;
-}
 
-void ConnectionProcess(Connection& conn, int wc) {
-  conn.SetWriteChannel(wc);
-  if (CreateChildProcess() == 0) {
-    conn.Run();
-  }
-}
-
-int main() {
-  IdleEngineProcess* iep = EngineProcess();
+  // Fork a new process for every incoming connection
   Socket socket;
   while (true) {
     auto conn = socket.AcceptConnection();
-    ConnectionProcess(conn, iep->GetWriteChannel());
+    conn.SetWriteChannel(p.GetWriteChannel());
+    if (CreateChildProcess() == 0) {
+      conn.Run();
+    }
   }
 
-  // TODO: wait also for engine process and others?
-  // waitpid(pid, nullptr, 0);
+  // Wait for children to exit
+  pid_t wpid;
+  int status = 0;
+  while ((wpid = wait(&status)) > 0)
+    ;
   return 0;
 }

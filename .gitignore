@@ -51,4 +51,5 @@ idle-engine.sln
 idle-engine.vcxproj
 idle-engine.vcxproj.user
 obj
-
+.DS_Store
+*.dSYM

@@ -1,10 +1,10 @@
 #pragma once
 #ifdef __APPLE__
-  #include <sys/wait.h>
+#include <sys/wait.h>
 #else
-  #include <wait.h>
+#include <wait.h>
 #endif
-#include <unistd.h>
+#include "exception.h"
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
@@ -12,27 +12,20 @@
 #include <queue>
 #include <sstream>
 #include <string>
+#include <unistd.h>
 #include <utility>
-#include "exception.h"
-
-constexpr auto FD_READ = 0;
-constexpr auto FD_WRITE = 1;
 
 class IdleEngineProcess {
- private:
-  int _rd_channel;
-  int _wr_channel;
+private:
+    int _rd_channel;
+    int _wr_channel;
 
- public:
-  IdleEngineProcess() {
-    int pipefds[2];
-    // TODO: extract pipe creation
-    auto rs = pipe(pipefds);
-    _rd_channel = pipefds[FD_READ];
-    _wr_channel = pipefds[FD_WRITE];
-  };
-  ~IdleEngineProcess(){};
-  int GetReadChannel();
-  int GetWriteChannel();
-  void Run();
+public:
+    IdleEngineProcess(int rd_channel)
+        : _rd_channel(rd_channel) {};
+
+    ~IdleEngineProcess() {};
+    int GetReadChannel();
+    int GetWriteChannel();
+    void Run();
 };
