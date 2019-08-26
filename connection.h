@@ -1,26 +1,24 @@
 #pragma once
-#include "resource.h"
-#include <string>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <string>
+#include "resource.h"
 
 class Socket;
 
-class Connection
-{
-private:
-  int _id = 0;
-  Socket* _socket;
-  int _rd_channel;
-  int _wr_channel;
+class Connection {
+ private:
+  int m_Id = 0;
+  int m_ReadChannel;
+  int m_WriteChannel;
 
-public:
+ public:
   void Run();
   int GetWriteChannel();
   int GetReadChannel();
-  void SetWriteChannel(int wr_channel);
-  void SetReadChannel(int rd_channel);
-  Connection(int id) : _id(id) {}
+  void SetWriteChannel(int fd);
+  void SetReadChannel(int fd);
+  Connection(int id) : m_Id(id) {}
   ~Connection(){};
   RGroupUpdateEvt ReceiveMsg() const;
   void SendMsg(std::string msg) const;

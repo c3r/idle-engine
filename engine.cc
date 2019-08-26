@@ -4,8 +4,8 @@
 int IdleEngineProcess::GetReadChannel() { return _rd_channel; }
 int IdleEngineProcess::GetWriteChannel() { return _wr_channel; }
 
-inline void PrintEvt(RGroupUpdateEvt& evt) {
-  std::cout << " < " << evt.conn_id << " > " << evt.str_val << std::endl;
+inline void PrintEvt(RGroupUpdateEvt &evt) {
+  std::cout << " < " << evt.ConnId << " > " << evt.StrVal << std::endl;
 }
 
 void IdleEngineProcess::Run() {

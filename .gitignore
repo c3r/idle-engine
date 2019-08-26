@@ -53,3 +53,8 @@ idle-engine.vcxproj.user
 obj
 .DS_Store
 *.dSYM
+idle-engine.config
+idle-engine.creator
+idle-engine.files
+idle-engine.includes
+*.user

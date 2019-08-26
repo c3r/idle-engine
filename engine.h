@@ -4,7 +4,7 @@
 #else
 #include <wait.h>
 #endif
-#include "exception.h"
+#include <unistd.h>
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
@@ -12,20 +12,19 @@
 #include <queue>
 #include <sstream>
 #include <string>
-#include <unistd.h>
 #include <utility>
+#include "exception.h"
 
 class IdleEngineProcess {
-private:
-    int _rd_channel;
-    int _wr_channel;
+ private:
+  int _rd_channel;
+  int _wr_channel;
 
-public:
-    IdleEngineProcess(int rd_channel)
-        : _rd_channel(rd_channel) {};
+ public:
+  IdleEngineProcess(int rd_channel) : _rd_channel(rd_channel){};
 
-    ~IdleEngineProcess() {};
-    int GetReadChannel();
-    int GetWriteChannel();
-    void Run();
+  ~IdleEngineProcess(){};
+  int GetReadChannel();
+  int GetWriteChannel();
+  void Run();
 };

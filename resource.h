@@ -15,7 +15,7 @@ struct RMeta {
 };
 
 struct Resource {
-  const RMeta* meta;
+  const RMeta *meta;
   RIntVal int_val;
   RStrVal str_val;
 };
@@ -23,21 +23,21 @@ struct Resource {
 typedef std::map<uint32_t, Resource> RMap;
 
 struct RGroup {
-  RMeta* meta;
+  RMeta *meta;
   RMap map;
 };
 
 struct RGroupUpdateEvt {
-  int conn_id;
-  int32_t tick;
-  RIdent rgroup_id;
-  RIntVal int_diff;
-  RStrVal str_val;
+  int ConnId;
+  int32_t Tick;
+  RIdent RGroupId;
+  RIntVal IntDiff;
+  RStrVal StrVal;
 };
 
 struct UEventCmp {
-  bool operator()(RGroupUpdateEvt& evt1, RGroupUpdateEvt& evt2) {
-    return evt1.tick > evt2.tick;
+  bool operator()(RGroupUpdateEvt &evt1, RGroupUpdateEvt &evt2) {
+    return evt1.Tick > evt2.Tick;
   }
 };
 

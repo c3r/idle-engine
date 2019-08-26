@@ -1,19 +1,19 @@
 #pragma once
-#include "exception.h"
 #include <arpa/inet.h>
-#include <cerrno>
-#include <cstring>
 #include <fcntl.h>
-#include <iostream>
-#include <memory>
 #include <netdb.h>
-#include <stdexcept>
 #include <string.h>
-#include <string>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <cerrno>
+#include <cstring>
+#include <iostream>
+#include <memory>
+#include <stdexcept>
+#include <string>
 #include <vector>
+#include "exception.h"
 
 constexpr auto kDefaultPort = 54000;
 constexpr auto kSockDomain = AF_INET;
@@ -22,27 +22,25 @@ constexpr auto kSockProtocol = 0;
 constexpr auto kBindAddr = INADDR_ANY;
 
 class Connection;
-typedef std::vector<std::unique_ptr<Connection>> ConnectionsVec;
+typedef std::vector<std::unique_ptr<Connection> > ConnectionsVec;
 
 class Socket {
-private:
-    int port_;
-    int listening_sock_;
+ private:
+  int port_;
+  int listening_sock_;
 
-    int Create();
-    void Listen();
+  int Create();
+  void Listen();
 
-public:
-    Socket(uint16_t port = kDefaultPort)
-        : port_(port)
-    {
-        listening_sock_ = Create();
-        Listen();
-    }
-    ~Socket() {
-        // TODO: close all connections
-    };
+ public:
+  Socket(uint16_t port = kDefaultPort) : port_(port) {
+    listening_sock_ = Create();
+    Listen();
+  }
+  ~Socket(){
+      // TODO: close all connections
+  };
 
-    Connection AcceptConnection();
-    void Close(int fd);
+  Connection AcceptConnection();
+  void Close(int fd);
 };

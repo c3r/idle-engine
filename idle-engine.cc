@@ -3,7 +3,7 @@
 #include "pipe.h"
 #include "socket.h"
 
-inline pid_t CreateChildProcess() {
+inline pid_t create_child_proc() {
   auto pid = fork();
   if (pid == -1) {
     throw_exception("Could not create child process");
@@ -17,7 +17,7 @@ int main() {
 
   // Engine process
   IdleEngineProcess iep(p.GetReadChannel());
-  if (CreateChildProcess() == 0) {
+  if (create_child_proc() == 0) {
     iep.Run();
   }
 
@@ -26,7 +26,7 @@ int main() {
   while (true) {
     auto conn = socket.AcceptConnection();
     conn.SetWriteChannel(p.GetWriteChannel());
-    if (CreateChildProcess() == 0) {
+    if (create_child_proc() == 0) {
       conn.Run();
     }
   }
